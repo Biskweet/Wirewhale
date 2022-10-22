@@ -7,6 +7,9 @@ if __name__ == "__main__":
         raise SystemExit("No file provided.")
 
     parser = Parser(sys.argv[1])
+
     result = parser.parse()
 
-    print(result)
+    # Temp output (each frame as a dict interpolated with 2 line returns)
+    with open("wirewhale_output.txt", "w") as output:
+        output.write(result)
