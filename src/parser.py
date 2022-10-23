@@ -1,3 +1,5 @@
+
+import json
 import re
 
 # Custom import
@@ -27,7 +29,9 @@ class Parser:
                 # breakpoint()
                 raise SystemExit(f"Frame {i} not IPv4 (or still has preamble). Aborting.")
 
-            result += str(self.analyze_frame(frame)) + '\n\n'
+            analysis = self.analyze_frame(frame)
+
+            result += json.dumps(analysis, indent=4) + '\n\n\n'
 
         return result
 
@@ -40,7 +44,7 @@ class Parser:
         """
         data = self.raw.strip(" \n")  # Stripping whitespaces and line returns
 
-        # Removing duplicates line returns (no matter how many of them)
+        # Removing duplicate line returns (no matter how many)
         data = re.sub(r'\n\n+', r'\n', data)
 
         frames = []
@@ -50,14 +54,20 @@ class Parser:
         for i, line in enumerate(data.splitlines()):
             offset = int(line[:4], 16)
 
-            # In case we find a new frame
-            if offset == 0:
-                if i != 0:  # If it's the first
-                    frames.append(current_frame)
-                    current_frame = ''
+            line = line[4:].strip(' ')
 
-            # Add (and overwrite) string starting on the offset index, & remove the trailing ASCII translation
-            current_frame = current_frame[:offset * 2] + line[4:line.find('   ')].replace(' ', '')
+            # In case we find a new frame and it's not the first
+            if offset == 0 and i != 0:
+                frames.append(current_frame)
+                current_frame = ''
+
+            # Add (or overwrite) string & remove the trailing ASCII translation starting from the 3 spaces
+            end_of_data = line.find("  ")
+
+            if end_of_data == -1:  # No trailing ASCII translation
+                current_frame = current_frame[:offset * 2] + line.replace(' ', '')
+            else:                  # ASCII translation found
+                current_frame = current_frame[:offset * 2] + line[:end_of_data].replace(' ', '')
 
         frames.append(current_frame)
 
@@ -102,6 +112,7 @@ class Parser:
 
         # Asserting protocol type
         if protocol != "06":
+            breakpoint()
             raise SystemExit("Frame protocol isn't TCP. Aborting.")
 
         protocol = "TCP (0x06)"
@@ -178,14 +189,14 @@ class Parser:
         method, url, http_version = headers[0].split("20")
 
         # Only split on the first occurence of 0x20 for the rest
-        headers = [arg.split("20", 1) for arg in headers[1:]]
+        headers = [arg.split("20", 1) for arg in headers]
 
         http_options = {utils.to_ascii(key)[:-1]: utils.to_ascii(value) for key, value in headers[1:]}
 
         return {
-            "http_method": method,
-            "url": url,
-            "http_version": http_version,
+            "http_method": utils.to_ascii(method),
+            "url": utils.to_ascii(url),
+            "http_version": utils.to_ascii(http_version),
             "http_options": http_options,
             "http_body": utils.to_ascii(''.join(body))
         }
