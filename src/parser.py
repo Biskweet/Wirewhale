@@ -26,7 +26,6 @@ class Parser:
 
         for i, frame in enumerate(frames):
             if (frame[24:28] != "0800") or (frame[28] != "4"):
-                # breakpoint()
                 raise SystemExit(f"Frame {i} not IPv4 (or still has preamble). Aborting.")
 
             analysis = self.analyze_frame(frame)
@@ -112,7 +111,6 @@ class Parser:
 
         # Asserting protocol type
         if protocol != "06":
-            breakpoint()
             raise SystemExit("Frame protocol isn't TCP. Aborting.")
 
         protocol = "TCP (0x06)"
