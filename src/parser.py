@@ -19,7 +19,7 @@ class Parser:
         self.raw = content.lower()
 
 
-    def parse(self, output="wirewhale_output.txt"):
+    def parse(self):
         frames = self.clean_data()
 
         result = ''
@@ -30,7 +30,7 @@ class Parser:
 
             analysis = self.analyze_frame(frame)
 
-            result += json.dumps(analysis, indent=4) + '\n\n\n'
+            result += json.dumps(analysis, indent=4) + "\n\n\n"
 
         return result
 
