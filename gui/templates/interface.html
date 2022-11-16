@@ -30,14 +30,21 @@
                 overflow-x: scroll;
                 overflow-y: hidden;
 
-                border-right: 1px solid #c2c5ff;
+                border-right: 2px solid #c2c5ff;
                 white-space: nowrap
             }
 
-            .description {
-                margin: 1px;
-                border-left: 1px solid #c2c5ff;
+            .visualization, .visualization div {
+                padding: 0;
+                margin: 0;
             }
+
+            #item {
+                border-right: solid 2px black;
+                height: 1000px;
+                width: 150px;
+            }
+
 
         </style>
 
@@ -128,6 +135,14 @@
             <p>9</p>
             <p>0</p>
         </div>
+
+        <!-- <div class="visualization">
+            <div class="ipaddress"></div>
+            <div id="item"></div>
+        </div>
+        <div class="description">
+            <p>ligne 1</p>
+        </div> -->
     </div>
 </body>
 </html>

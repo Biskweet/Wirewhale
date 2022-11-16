@@ -130,4 +130,4 @@ dmypy.json
 
 
 # Custom ignore
-wirewhale_output.txt
+*.txt

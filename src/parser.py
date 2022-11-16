@@ -4,6 +4,7 @@ import re
 
 # Custom import
 from src import utils
+from src.utils import TraceAbstract
 
 
 class Parser:
@@ -22,15 +23,20 @@ class Parser:
     def parse(self):
         frames = self.clean_data()
 
-        result = ''
+        result = []
 
         for i, frame in enumerate(frames):
             if (frame[24:28] != "0800") or (frame[28] != "4"):
                 raise SystemExit(f"Frame {i} not IPv4 (or still has preamble). Aborting.")
 
-            analysis = self.analyze_frame(frame)
+            try:
+                analysis = self.analyze_frame(frame)
 
-            result += json.dumps(analysis, indent=4) + "\n\n\n"
+            except Exception as e:
+                print(f"Cound not parse frame #{i}, skipping... ({e})")
+                continue
+
+            result.append(TraceAbstract(analysis))
 
         return result
 
@@ -85,7 +91,8 @@ class Parser:
         return ip_payload | {
             "mac_dest": mac_dest,
             "mac_src" : mac_src,
-            "ethernet_frame_type": ethernet_frame_type
+            "ethernet_frame_type": ethernet_frame_type,
+            "raw_data": frame
         }
 
 
