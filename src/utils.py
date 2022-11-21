@@ -1,16 +1,26 @@
 import os
 import sys
-import webbrowser
 
 import colorama as c
 
+logo_img = r"""              ´`.´`                        
+                :                          
+                :                          
+         _______:_______        |""\/""|   
+       ,'               `.      |      |   
+      /                   \      \    /    
+     |    O                \_____/    |    
+     |                                |    
+ ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~"""
 
-logo = r""" _    _  _                       _             _                   .                 
-| |  | |(_)                     | |           | |                 ":"                
-| |  | | _  _ __  ___ __      __| |__    __ _ | |  ___          ___:____     |"\/"|  
-| |/\| || || '__|/ _ \\ \ /\ / /| '_ \  / _` || | / _ \       ,'        `.    \  /   
-\  /\  /| || |  |  __/ \ V  V / | | | || (_| || ||  __/       |  O        \___/  |    
- \/  \/ |_||_|   \___|  \_/\_/  |_| |_| \__,_||_| \___|      ~^~^~^~^~^~^~^~^~^~^~^~^~"""
+
+logo_text = r"""
+___    __    ___ __   _____    _________    __    ______   __      _      __      ______ 
+\  \  /  \  /  /|  | |  _  \  |   ___\  \  /  \  /  /|  | |  |    / \    |  |    |   ___|
+ \  \/    \/  / |  | | |_)  | |  |__  \  \/    \/  / |  |_|  |   / ^ \   |  |    |  |__  
+  \          /  |  | |     /  |   __|  \          /  |   _   |  / /_\ \  |  |    |   __| 
+   \   /\   /   |  | | |\  \__|  |____  \   /\   /   |  | |  | / _____ \ |  `---.|  |___ 
+    \_/  \_/    |__| |_| `.___|_______|  \_/  \_/    |__| |__|/_/     \_\|______||______|"""
 
 
 try:
@@ -38,25 +48,7 @@ def to_ascii(hexadecimal):
     return bytearray.fromhex(hexadecimal).decode()
 
 
-def open_browser(host):
-    result = webbrowser.open_new(host)
-    if not result:
-        print("========================================")
-        print(f"COULD NOT OPEN WEB BROWSER. PLEASE OPEN {host} IN YOUR WEB BROWSER.")
-        print("========================================")
-
-
-def colorize(ip, port, mac):
-    return (
-        c.Fore.BLUE + ip + c.Fore.RESET +
-        ':' + c.Fore.CYAN + str(port) + c.Fore.RESET +
-        " (MAC: " + c.Fore.GREEN + mac + c.Fore.RESET + ')'
-    )
-
-
 def to_text(frames):
-    c.init()  # Initializing Colorama
-
     dimensions = os.get_terminal_size()
 
     report = ''
@@ -73,7 +65,7 @@ def to_text(frames):
         report += infos.center(dimensions.columns) + '\n'
         report += (char * len(infos)).center(dimensions.columns) + '\n'
 
-        # ==== Making arrow below
+        # Making arrow below
         # Calculating size of the bar of the arrow
         arrow = '-' * (dimensions.columns - len(f.ip_src) -
                        len(f.mac_src) - len(f.ip_dest) -
@@ -85,20 +77,38 @@ def to_text(frames):
 
         if f.ip_dest in visited_ips:
             arrow = f"{f.ip_dest}:{f.port_dest} (MAC: {f.mac_dest}) <{arrow} {f.ip_src}:{f.port_src} (MAC: {f.mac_src})"
+
         else:
             arrow = f"{f.ip_src}:{f.port_src} (MAC: {f.mac_src}) {arrow}> {f.ip_dest}:{f.port_dest} (MAC: {f.mac_dest})"
             visited_ips.append(f.ip_dest)
 
-        report += arrow.center(dimensions.columns) + '\n\n\n\n\n'
+        report += arrow.center(dimensions.columns) + '\n\n\n\n'
 
     return report
 
 
-def print_logo():
-    dim = os.get_terminal_size()
-
+def print_logo(dim):
     print("\n\n")
-    for line in logo.split("\n"):
+
+    for line in logo_img.split('\n'):
+        if line[1] == "~":
+            print(c.Fore.BLUE, end='')
+            print(line.center(dim.columns))
+            print(c.Fore.RESET)
+
+        else:
+            print(line.center(dim.columns))
+
+    print()
+
+    for line in logo_text.split("\n"):
         print(line.center(dim.columns))
-    print("\n\n")
 
+    print("\n\n\n")
+
+
+def clear_screen():
+    if os.name == "nt":
+        os.system("cls")
+    else:
+        os.system("clear")
