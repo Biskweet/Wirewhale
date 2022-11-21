@@ -1,5 +1,4 @@
-
-import json
+import os
 import re
 
 # Custom import
@@ -14,31 +13,10 @@ class Parser:
                 content = file.read()
 
         except Exception as err:
-            raise SystemExit(f"Could not opoen file ({err})")
+            raise SystemExit(f"Could not open file. ({err})")
 
         # Saving as instance attribute
         self.raw = content.lower()
-
-
-    def parse(self):
-        frames = self.clean_data()
-
-        result = []
-
-        for i, frame in enumerate(frames):
-            if (frame[24:28] != "0800") or (frame[28] != "4"):
-                raise SystemExit(f"Frame {i} not IPv4 (or still has preamble). Aborting.")
-
-            try:
-                analysis = self.analyze_frame(frame)
-
-            except Exception as e:
-                print(f"Cound not parse frame #{i}, skipping... ({e})")
-                continue
-
-            result.append(TraceAbstract(analysis))
-
-        return result
 
 
     def clean_data(self):
@@ -57,26 +35,54 @@ class Parser:
         offset = 0
 
         for i, line in enumerate(data.splitlines()):
-            offset = int(line[:4], 16)
+            try:
+                offset = int(line[:4], 16)
 
-            line = line[4:].strip(' ')
+                line = line[4:].strip(' ')
 
-            # In case we find a new frame and it's not the first
-            if offset == 0 and i != 0:
-                frames.append(current_frame)
-                current_frame = ''
+                # In case we find a new frame and it's not the first
+                if offset == 0 and i != 0:
+                    frames.append(current_frame)
+                    current_frame = ''
 
-            # Add (or overwrite) string & remove the trailing ASCII translation starting from the 3 spaces
-            end_of_data = line.find("  ")
+                # Add (or overwrite) string & remove the trailing ASCII translation starting from the 3 spaces
+                end_of_data = line.find("  ")
 
-            if end_of_data == -1:  # No trailing ASCII translation
-                current_frame = current_frame[:offset * 2] + line.replace(' ', '')
-            else:                  # ASCII translation found
-                current_frame = current_frame[:offset * 2] + line[:end_of_data].replace(' ', '')
+                if end_of_data == -1:  # No trailing ASCII translation
+                    current_frame = current_frame[:offset * 2] + line.replace(' ', '')
+                else:                  # ASCII translation found
+                    current_frame = current_frame[:offset * 2] + line[:end_of_data].replace(' ', '')
+
+            except Exception as e:
+                print(f"Could not properly parse frame {i+1}. To fix that, " +
+                       "please export from Wireshark according to the instructions" +
+                      f" in README. ({e}). Aborting.")
+                exit(1)
 
         frames.append(current_frame)
 
         return frames
+
+
+    def parse(self, frames):
+        dim = os.get_terminal_size()
+        result = []
+
+        for i, frame in enumerate(frames):
+            if (frame[24:28] != "0800") or (frame[28] != "4"):
+                print(f"Frame {i+1}/{len(frames)} not IPv4 (or still has Ethernet preamble).".center(dim.columns))
+                continue
+
+            try:
+                analysis = self.analyze_frame(frame)
+
+            except Exception as e:
+                print(f"Could not parse frame {i+1}/{len(frames)}. {e}".center(dim.columns))
+                continue
+
+            result.append(TraceAbstract(analysis))
+
+        return result
 
 
     def analyze_frame(self, frame):
@@ -118,7 +124,8 @@ class Parser:
 
         # Asserting protocol type
         if protocol != "06":
-            raise SystemExit("Frame protocol isn't TCP. Aborting.")
+            # breakpoint()
+            raise Exception("Frame protocol isn't TCP.")
 
         protocol = "TCP (0x06)"
 
