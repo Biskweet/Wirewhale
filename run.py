@@ -7,16 +7,23 @@ from src import utils
 
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2:
-        raise SystemExit("No file provided.")
+    dim = os.get_terminal_size()
 
-    parser = Parser(sys.argv[1])
+    utils.clear_screen()
+
+    if len(sys.argv) < 2:
+        print('\n\n', "Please input the (relative) path to the trace file".center(dim.columns), '\n')
+        input_filename = input(' ' * (dim.columns // 2) + ">>> ")
+    else:
+        input_filename = sys.argv[1]
+
+
+    parser = Parser(input_filename)
 
     frames = parser.clean_data()
 
 
     # Preparing interface
-    dim = os.get_terminal_size()
     utils.clear_screen()
     utils.print_logo(dim)
 
@@ -53,7 +60,7 @@ if __name__ == "__main__":
     print(abstract)
 
     # Getting output file name from the original
-    filename = sys.argv[1].replace("\\", "/").split("/")[-1].rsplit(".", 1)[0]
+    filename = input_filename.replace("\\", "/").split("/")[-1].rsplit(".", 1)[0]
 
     # Writing output in a file
     with open(filename + "_wirewhale_output.txt", "wb") as output:

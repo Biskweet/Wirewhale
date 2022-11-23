@@ -1,7 +1,6 @@
 import os
 import sys
 
-import colorama as c
 
 logo_img = r"""              ´`.´`                        
                 :                          
@@ -91,13 +90,7 @@ def print_logo(dim):
     print("\n\n")
 
     for line in logo_img.split('\n'):
-        if line[1] == "~":
-            print(c.Fore.BLUE, end='')
-            print(line.center(dim.columns))
-            print(c.Fore.RESET)
-
-        else:
-            print(line.center(dim.columns))
+        print(line.center(dim.columns))
 
     print()
 
