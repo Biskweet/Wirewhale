@@ -86,7 +86,7 @@ def to_text(frames):
     return report
 
 
-def print_logo(dim):
+def print_logo(dim: os.terminal_size):
     print("\n\n")
 
     for line in logo_img.split('\n'):
@@ -105,3 +105,8 @@ def clear_screen():
         os.system("cls")
     else:
         os.system("clear")
+
+
+
+def filter_frames(frames: list[TraceAbstract]):
+    ...

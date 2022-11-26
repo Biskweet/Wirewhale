@@ -64,7 +64,7 @@ class Parser:
         return frames
 
 
-    def parse(self, frames):
+    def parse(self, frames) -> list[TraceAbstract]:
         dim = os.get_terminal_size()
         result = []
 
@@ -89,7 +89,7 @@ class Parser:
         mac_dest = utils.pretty_print_mac(frame[:12])
         mac_src  = utils.pretty_print_mac(frame[12:24])
 
-        # IPv4 has been checked before no need to read from the frame
+        # IPv4 has been checked before, no need to read from the frame again
         ethernet_frame_type = "IPv4 (0x0800)"
 
         ip_payload = self.scan_ipv4_headers(frame[28:])
@@ -169,10 +169,11 @@ class Parser:
 
         tcp_options = frame[40:2 * tcp_header_length]
 
-        # Making sure the frame has HTTP data & isn't just TCP
+        # If the frame DOES NOT contain HTTP data
         if frame[2 * tcp_header_length:] == '':
             http_payload = {}
 
+        # If it does contain HTTP data
         else:
             http_payload = self.scan_http_headers(frame[2 * tcp_header_length:])
 
@@ -190,7 +191,7 @@ class Parser:
 
 
     def scan_http_headers(self, frame):
-        frame = frame.split("0d0a0d0a")
+        frame = frame.lower().split("0d0a0d0a")
 
         # Unpacking frame (should be at max a 2-uple but using starred expr.,
         # just in case there it is a n-uple. `body` is then a list of str)

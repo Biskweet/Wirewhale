@@ -8,9 +8,9 @@ from src import utils
 
 if __name__ == "__main__":
     dim = os.get_terminal_size()
-
     utils.clear_screen()
 
+    # Querying the input file in case it wasn't provided
     if len(sys.argv) < 2:
         print('\n\n', "Please input the (relative) path to the trace file".center(dim.columns), '\n')
         input_filename = input(' ' * (dim.columns // 2) + ">>> ")
@@ -19,7 +19,6 @@ if __name__ == "__main__":
 
 
     parser = Parser(input_filename)
-
     frames = parser.clean_data()
 
 
@@ -36,16 +35,18 @@ if __name__ == "__main__":
 
     print("\n")
 
-
+    # Processing the user's choice
     if user_input.isdigit() and 0 < int(user_input) <= len(frames):
         result = parser.parse([frames[int(user_input) - 1]])
-
     else:
         result = parser.parse(frames)
 
+    # Print something in case there is nothing to show
     if not result:
         print("No valid frame to print.".center(dim.columns), '\n')
         exit()
+
+    utils.filter_frames(result)
 
     abstract = utils.to_text(result)
 
