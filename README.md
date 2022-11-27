@@ -2,7 +2,7 @@
 
 
 
-Ce projet cherche à reproduire une version très minimale du contenu de l'analyse mode *Flow chart* proposée par Wireshark. L'analyse n'est pas en temps réel : il faut fournir un fichier trace contenant les octets des communications.
+Ce projet cherche à reproduire une version très minimale du contenu de l'analyse en mode *Flow chart* proposée par Wireshark. L'analyse n'est pas en temps réel : il faut fournir un fichier trace contenant les octets des communications.
 
 L'outil est capable d'analyser les protocoles suivants :
 
@@ -11,13 +11,13 @@ L'outil est capable d'analyser les protocoles suivants :
 * TCP
 * HTTP
 
-⚠️Tout protocole autre provoquera un **refus d'analyse de la trame en question** (HTTP est optionnel ; l'analyseur peut se passer de la présence de ce protocole et s'arrêter au segment TCP).
+⚠️Tout autre protocole provoquera un **refus d'analyse de la trame en question** (le protocole HTTP est optionnel : l'analyseur peut se passer de sa présence et s'arrêter au segment TCP).
 
 ### Entrée
 
-Le fichier trace doit **absolument** être formatté selon la manière de faire de Wireshark. Pour exporter un fichier au format correct, il faut :
+Le fichier trace doit <u>**absolument**</u> être formatté selon la manière de faire de Wireshark. Pour exporter un fichier au format correct, il faut :
 
-* Lancer Wireshark et démarrer l'analyse en temps réeel/ouvrir le fichier au format PCAPNG
+* Lancer Wireshark et démarrer l'analyse en temps réel/ouvrir le fichier au format PCAPNG
 * File → Export Packets Dissections → As Plain Text
 * ⚠️ **Décocher « Packet summary line », « Include column headings » et « Packet details »**
 * ⚠️ **Cocher « Packet bytes »**
@@ -37,7 +37,7 @@ Exemple de trame valide à l'entrée :
 
 La structure du code est relativement simple :
 
-* <u>Le parser</u> est une classe. Elle s'initie avec le chemin vers le fichier trace, qui est lu et décodé pour être analysé par la suite. En voici un prototype :
+* <u>Le parser</u> est une classe. Ses instances s'initient avec le chemin vers le fichier trace, qui est lu et décodé pour être analysé par la suite. En voici un prototype :
 
   ```py
   class Parser:
@@ -54,18 +54,17 @@ La structure du code est relativement simple :
 
   
 
-* Les données brutes sont nettoyées et transformées en un liste de strings, qui correspondent chacune à une trame, dans `clean_data` puis dans `parser`.
+* Les données brutes sont nettoyées et transformées en un liste de chaînes de caractères, qui correspondent chacune à une trame, dans `clean_data` puis dans `parse`.
 
-* Chaque couche de la trame dispose d'une méthode de `Parser` dédiée pour analyser son contenu.
+* Chaque couche de la trame dispose d'une méthode dédiée dans `Parser`, pour analyser son contenu.
 
 * Ces dernières méthodes s'appellent les unes les autres :
 
-  * La méthode `analyze_frame` récupère les informations de la trame Ethernet, constitue un dictionnaire et le joint au résultat de l'appel de la fonction suivante ;
-  * La méthode `scan_ipv4_headers` récupère les informations du paquet IP, constitue un dictionnaire et le joint au résultat de l'appel de la fonction suivante ;
-  * La méthode `scan_tcp_headers` récupère les informations du segment TCP, constitue un dictionnaire et le joint au résultat de l'appel de la fonction suivante ;
+  * La méthode `analyze_frame` récupère les informations de la trame Ethernet, constitue un dictionnaire et le joint au résultat de `scan_ipv4_headers` ;
+  * La méthode `scan_ipv4_headers` récupère les informations du paquet IP, constitue un dictionnaire et le joint au résultat de `scan_tcp_headers` ;
+  * La méthode `scan_tcp_headers` récupère les informations du segment TCP, constitue un dictionnaire et le joint au résultat de `scan_http_header` ;
   * La méthode `scan_http_header` récupère les données HTTP (si elles existent), constitue un dictionnaire de ses attributs et le renvoie.
 
-On a donc `analyze_frame ∪ (scan_ipv4_headers ∪ (scan_tcp_headers ∪ scan_http_header))`.
+On a donc, pseudo-mathématiquement : `analyze_frame ∪ (scan_ipv4_headers ∪ (scan_tcp_headers ∪ scan_http_header))`.
 
-Une petite classe et différentes fonctions utilitaires existent dans le fichier `utils` et servent à gérer l'affichage ou simplifier le code de `Parser`. Elles ne seront pas détaillées ici.
-
+Une autre petite classe, ainsi que différentes fonctions utilitaires, existent dans le fichier `utils.py` et servent à gérer l'affichage ou à simplifier le code de `Parser`. Elles ne seront pas détaillées ici.
