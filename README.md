@@ -18,7 +18,7 @@ L'outil est capable d'analyser les protocoles suivants :
 Le fichier trace doit **absolument** être formatté selon la manière de faire de Wireshark. Pour exporter un fichier au format correct, il faut :
 
 * Lancer Wireshark et démarrer l'analyse en temps réeel/ouvrir le fichier au format PCAPNG
-* File ==> Export Packets Dissections ==> As Plain Text
+* File → Export Packets Dissections → As Plain Text
 * ⚠️ **Décocher « Packet summary line », « Include column headings » et « Packet details »**
 * ⚠️ **Cocher « Packet bytes »**
 * Sauvegarder
