@@ -190,11 +190,8 @@ def filter_frames(frames: list[TraceAbstract], dim: os.terminal_size) -> list[Tr
 
     print()
 
-    print("What filter(s) do you want to apply".center(dim.columns))
-    print(' ' * (dim.columns // 2 - 10) + "1: Source IP address ")
-    print(' ' * (dim.columns // 2 - 10) + "2: Source port number")
-    print(' ' * (dim.columns // 2 - 10) + "3: Enforce protocol  ")
-    print(' ' * (dim.columns // 2 - 10) + "4: All 3             ")
+    print("What filter(s) do you want to apply ?".center(dim.columns))
+    print("1: Source IP address, 2: Source port number, 3: Enforce protocol, 4: All 3".center(dim.columns))
 
     answer = input(' ' * (dim.columns // 2 - 5) + ">>> ")
 

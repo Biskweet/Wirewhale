@@ -128,9 +128,15 @@ class Parser:
 
         # Asserting protocol type
         if protocol != "06":
-            protocol = "0x" + protocol
+            if protocol == "11":
+                protocol = "UDP (0x11)"
+            elif protocol == "01":
+                protocol = "ICMP"
+            else:
+                protocol = "0x" + protocol
+    
             tcp_payload = {}
-            # raise Exception("Frame protocol isn't TCP.")
+
         else:
             protocol = "TCP (0x06)"
             tcp_payload = self.scan_tcp_headers(frame[2 * header_length:])
