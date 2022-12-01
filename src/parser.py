@@ -19,7 +19,7 @@ class Parser:
         self.raw = content.lower()
 
 
-    def clean_data(self):
+    def clean_data(self) -> list[str]:
         """
         Returns the list of frames contained in the trace, each as a
         single one-line string. Each character of the string is half
@@ -64,7 +64,7 @@ class Parser:
         return frames
 
 
-    def parse(self, frames) -> list[TraceAbstract]:
+    def parse(self, frames: list[str]) -> list[TraceAbstract]:
         dim = os.get_terminal_size()
         result = []
 
@@ -85,7 +85,7 @@ class Parser:
         return result
 
 
-    def analyze_frame(self, frame):
+    def analyze_frame(self, frame: str) -> dict[str, object]:
         mac_dest = utils.pretty_print_mac(frame[:12])
         mac_src  = utils.pretty_print_mac(frame[12:24])
 
@@ -95,14 +95,14 @@ class Parser:
         ip_payload = self.scan_ipv4_headers(frame[28:])
 
         return ip_payload | {
-            "mac_dest": mac_dest,
-            "mac_src" : mac_src,
+            "mac_dest"           : mac_dest,
+            "mac_src"            : mac_src,
             "ethernet_frame_type": ethernet_frame_type,
-            "raw_data": frame
+            "raw_data"           : frame
         }
 
 
-    def scan_ipv4_headers(self, frame):
+    def scan_ipv4_headers(self, frame: str) -> dict[str, object]:
         ipversion, hlen = frame[0], frame[1]
 
         # int(string, 16) converts `string` from hexadecimal str to integer
@@ -122,38 +122,37 @@ class Parser:
 
         ip_options = frame[40:2 * header_length]
 
-        # Asserting protocol type
-        if protocol != "06":
-            # breakpoint()
-            raise Exception("Frame protocol isn't TCP.")
-
-        protocol = "TCP (0x06)"
-
         # Making IP addresses more readable
         ip_src = utils.pretty_print_ip(ip_src)
         ip_dest = utils.pretty_print_ip(ip_dest)
 
-
-        tcp_payload = self.scan_tcp_headers(frame[2 * header_length:])
-
+        # Asserting protocol type
+        if protocol != "06":
+            protocol = "0x" + protocol
+            tcp_payload = {}
+            # raise Exception("Frame protocol isn't TCP.")
+        else:
+            protocol = "TCP (0x06)"
+            tcp_payload = self.scan_tcp_headers(frame[2 * header_length:])
 
         return tcp_payload | {
-            "ipversion": ipversion,
+            "ip"              : True,
+            "ipversion"       : ipversion,
             "ip_header_length": header_length,
-            "dscp_and_ecn": dscp_and_ecn,
-            "total_length" : total_length,
-            "ip_identifier": ip_identifier,
+            "dscp_and_ecn"    : dscp_and_ecn,
+            "total_length"    : total_length,
+            "ip_identifier"   : ip_identifier,
             "flags_and_offset": flags_and_offset,
-            "ttl": ttl,
-            "protocol": protocol,
-            "ip_checksum": checksum,
-            "ip_src": ip_src,
-            "ip_dest": ip_dest,
-            "ip_options": ip_options
+            "ttl"             : ttl,
+            "protocol"        : protocol,
+            "ip_checksum"     : checksum,
+            "ip_src"          : ip_src,
+            "ip_dest"         : ip_dest,
+            "ip_options"      : ip_options
         }
 
 
-    def scan_tcp_headers(self, frame):
+    def scan_tcp_headers(self, frame: str) -> dict[str, object]:
         port_src = int(frame[0:4], 16)
         port_dest = int(frame[4:8], 16)
 
@@ -178,38 +177,38 @@ class Parser:
             http_payload = self.scan_http_headers(frame[2 * tcp_header_length:])
 
         return http_payload | {
-            "port_src": port_src,
-            "port_dest": port_dest,
-            "sequence_number": sequence_number,
-            "ack_number": ack_number,
-            "tcp_header_length": tcp_header_length,
+            "tcp"               : True,
+            "port_src"          : port_src,
+            "port_dest"         : port_dest,
+            "sequence_number"   : sequence_number,
+            "ack_number"        : ack_number,
+            "tcp_header_length" : tcp_header_length,
             "window_buffer_size": window_buffer_size,
-            "tcp_checksum": tcp_checksum,
-            "urgent_pointer": urgent_pointer,
-            "tcp_options": tcp_options,
+            "tcp_checksum"      : tcp_checksum,
+            "urgent_pointer"    : urgent_pointer,
+            "tcp_options"       : tcp_options,
         }
 
 
-    def scan_http_headers(self, frame):
-        frame = frame.lower().split("0d0a0d0a")
-
+    def scan_http_headers(self, frame: str) -> dict[str, object]:
         # Unpacking frame (should be at max a 2-uple but using starred expr.,
         # just in case there it is a n-uple. `body` is then a list of str)
-        headers, *body = frame
+        headers, *body = frame.lower().split("0d0a0d0a")
 
         headers = headers.split("0d0a")
 
         method, url, http_version = headers[0].split("20")
 
-        # Only split on the first occurence of 0x20 for the rest
-        headers = [arg.split("20", 1) for arg in headers]
+        # Only split on the first occurence of 0x3a20 (i.e. ': ')
+        headers = [arg.split("3a20", 1) for arg in headers[1:]]
 
-        http_options = {utils.to_ascii(key)[:-1]: utils.to_ascii(value) for key, value in headers[1:]}
+        http_options = {utils.to_ascii(key).lower(): utils.to_ascii(value) for key, value in headers}
 
         return {
-            "http_method": utils.to_ascii(method),
-            "url": utils.to_ascii(url),
+            "http"        : True,
+            "http_method" : utils.to_ascii(method),
+            "url"         : utils.to_ascii(url),
             "http_version": utils.to_ascii(http_version),
             "http_options": http_options,
-            "http_body": utils.to_ascii(''.join(body))
+            "http_body"   : utils.to_ascii(''.join(body))
         }

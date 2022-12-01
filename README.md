@@ -11,7 +11,7 @@ L'outil est capable d'analyser les protocoles suivants :
 * TCP
 * HTTP
 
-⚠️Tout autre protocole provoquera un **refus d'analyse de la trame en question** (le protocole HTTP est optionnel : l'analyseur peut se passer de sa présence et s'arrêter au segment TCP).
+⚠️Tout autre protocole autre qu'Ethernet ou IPv4 risque de provoquer un **refus d'analyse de la trame en question**. De même, le programme n'est pas garanti de fonctionner pour tout autre protocole que TCP ou HTTP.
 
 ### Entrée
 

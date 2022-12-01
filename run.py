@@ -17,9 +17,10 @@ if __name__ == "__main__":
     else:
         input_filename = sys.argv[1]
 
-
+    # Cleaning data and parsing
     parser = Parser(input_filename)
     frames = parser.clean_data()
+    result = parser.parse(frames)
 
 
     # Preparing interface
@@ -27,26 +28,17 @@ if __name__ == "__main__":
     utils.print_logo(dim)
 
 
-    # Filtering frames by the user's choice
-    print(f"{len(frames)} readable frames found.".center(dim.columns))
-    print(f"Please input the index of the frame to analyze (0 < i <= {len(frames)}, anything else = all frames).".center(dim.columns), '\n')
-    user_input = input(' ' * (dim.columns // 2 - 5) + ">>> ")
-
+    # Filtering frames with the user's choice
+    print(f"{len(result)} readable frames found.".center(dim.columns))
+    result = utils.filter_frames(result, dim)
 
     print("\n")
 
-    # Processing the user's choice
-    if user_input.isdigit() and 0 < int(user_input) <= len(frames):
-        result = parser.parse([frames[int(user_input) - 1]])
-    else:
-        result = parser.parse(frames)
 
     # Print something in case there is nothing to show
     if not result:
         print("No valid frame to print.".center(dim.columns), '\n')
         exit()
-
-    utils.filter_frames(result)
 
     abstract = utils.to_text(result)
 
