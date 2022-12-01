@@ -44,8 +44,9 @@ if __name__ == "__main__":
 
     # If the abstract is too wide for the terminal
     while abstract == '':
-        input("Terminal does not have enough rows, please decrease font size (press enter to retry)")
+        input("Terminal does not have enough rows, please decrease font size or dezoom terminal (press enter to retry)")
         abstract = utils.to_text(result)
+        dim = os.get_terminal_size()
 
     print("\n\n")
 
