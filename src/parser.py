@@ -74,7 +74,7 @@ class Parser:
                 continue
 
             try:
-                analysis = self.analyze_frame(frame)
+                analysis = self.analyze_frame(frame.lower())
 
             except Exception as e:
                 print(f"Could not parse frame {i+1}/{len(frames)}. {e}".center(dim.columns))
@@ -193,7 +193,7 @@ class Parser:
     def scan_http_headers(self, frame: str) -> dict[str, object]:
         # Unpacking frame (should be at max a 2-uple but using starred expr.,
         # just in case there it is a n-uple. `body` is then a list of str)
-        headers, *body = frame.lower().split("0d0a0d0a")
+        headers, *body = frame.split("0d0a0d0a")
 
         headers = headers.split("0d0a")
 

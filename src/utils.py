@@ -149,7 +149,7 @@ def to_text(frames: list[TraceAbstract]) -> str:
                 visited_ips.append(f.ip_src)
 
 
-        if len(infos) > (dimensions.columns - 30) or arrow == '':
+        if len(infos) > (dimensions.columns - 25) or arrow == '':
             return ''  # Not enough size on screen
 
         report += infos.center(dimensions.columns) + '\n'
