@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
 
     # Filtering frames with the user's choice
-    print(f"{len(result)} readable frames found.".center(dim.columns))
+    print(f"{len(result)} readable and compatible (Ethernet & IPv4) frames found.".center(dim.columns))
     result = utils.filter_frames(result, dim)
 
     print("\n")

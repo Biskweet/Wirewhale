@@ -13,13 +13,12 @@ logo_img = r"""              ´`.´`
  ~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~^~"""
 
 
-logo_text = r"""
-___    __    ___ __   _____    _________    __    ______   __      _      __      ______ 
-\  \  /  \  /  /|  | |  _  \  |   ___\  \  /  \  /  /|  | |  |    / \    |  |    |   ___|
- \  \/    \/  / |  | | |_)  | |  |__  \  \/    \/  / |  |_|  |   / ^ \   |  |    |  |__  
-  \          /  |  | |     /  |   __|  \          /  |   _   |  / /_\ \  |  |    |   __| 
-   \   /\   /   |  | | |\  \__|  |____  \   /\   /   |  | |  | / _____ \ |  `---.|  |___ 
-    \_/  \_/    |__| |_| `.___|_______|  \_/  \_/    |__| |__|/_/     \_\|______||______|"""
+logo_text = r"""___    __    ___ __   ______    _________    __    ______   __      _      __     ______ 
+\  \  /  \  /  /|  | |   _  \  |   ___\  \  /  \  /  /|  | |  |    / \    |  |   |   ___|
+ \  \/    \/  / |  | |  |_)  | |  |__  \  \/    \/  / |  |_|  |   / ^ \   |  |   |  |__  
+  \          /  |  | |      /  |   __|  \          /  |   _   |  / /_\ \  |  |   |   __| 
+   \   /\   /   |  | |  |\  \__|  |____  \   /\   /   |  | |  | / _____ \ |  `---|  |___ 
+    \_/  \_/    |__| |__| `.___|_______|  \_/  \_/    |__| |__|/_/     \_\|______|______|"""
 
 
 try:
@@ -37,6 +36,19 @@ except UnicodeEncodeError as err:
 
 
 class TraceAbstract(dict):
+    def get(self, key: str) -> object:
+        return super().get(key, '')
+
+
+    def __getitem__(self, key: str) -> object:
+        return self.get(key)
+
+
+    def __setitem__(self, key: str, value: object) -> None:
+        super().__setitem__(key, value)
+        self.__dict__.update({key: value})
+
+
     def __init__(self, *args):
         # Declaring attributes for linters
 
@@ -81,23 +93,13 @@ class TraceAbstract(dict):
         self.http_options : dict[str, str]
         self.http_body : str
 
-        # On instantiation, update dictionary and attributes
+        # On instantiation, update dictionary & attributes
         self.update(*args)
         self.__dict__.update(*args)
 
-    def get(self, key: str) -> object:
-        return super().get(key, '')
-
-    def __getitem__(self, key: str) -> object:
-        return self.get(key)
-
-    def __setitem__(self, key: str, value: object) -> None:
-        super().__setitem__(key, value)
-        self.__dict__.update({key: value})
-
 
 def pretty_print_mac(mac: str) -> str:
-    return ':'.join(mac[n:n+2] for n in range(0, len(mac), 2))
+    return ':'.join(mac[n:n+2].upper() for n in range(0, len(mac), 2))
 
 
 def pretty_print_ip(ip: str) -> str:
@@ -129,7 +131,6 @@ def to_text(frames: list[TraceAbstract]) -> str:
                        len(f.mac_src) - len(f.ip_dest) -
                        len(f.mac_dest) - 30)
         arrow = arrow[:20]  # Max size is 20
-
 
         # Frame is TCP
         if f.tcp == True:
@@ -191,35 +192,51 @@ def filter_frames(frames: list[TraceAbstract], dim: os.terminal_size) -> list[Tr
     if answer.lower() not in ('y', 'yes'):
         return frames
 
-    print()
-
-    print("What filter(s) do you want to apply ?".center(dim.columns))
-    print("1: Source IP address, 2: Source port number, 3: Enforce protocol, 4: All 3".center(dim.columns))
+    print('\n' + "What filter(s) do you want to apply ?".center(dim.columns))
+    print("1: Source IP address, 2: Source port number, 3: Enforce protocol, 4: Multiple filters".center(dim.columns))
 
     answer = input(' ' * (dim.columns // 2 - 5) + ">>> ")
 
+
     # Filter by IP ===============
     if answer in ('1', '4'):
-        print("\n" + "Please specify an IP address".center(dim.columns))
+        print('\n' + "Available source IP addresses:".center(dim.columns) + '\n' + list_all_ips(frames, dim))
+        print("Please specify an IP address (empty input for any)".center(dim.columns))
         target_ip = input(' ' * (dim.columns // 2 - 7) + ">>> ")
-        # breakpoint()
-        frames = [frame for frame in frames if frame.ip_src == target_ip]
+
+        frames = [frame for frame in frames if not target_ip or frame.ip_src == target_ip]
 
     # Filter by PORT =============
     if answer in ('2', '4'):
-        print("\n" + "Please specify a port number".center(dim.columns))
+        print("\n" + "Please specify a port number (empty input for any)".center(dim.columns))
         target_port = input(' ' * (dim.columns // 2 - 7) + ">>> ")
 
-        frames = [frame for frame in frames if str(frame.get("port_src")) == target_port]
+        frames = [frame for frame in frames if not target_port or str(frame.get("port_src")) == target_port]
 
     # Filter by PROTOCOL =========
     if answer in ('3', '4'):
-        print("\n" + "Please specify a protocol to enforce (TCP/HTTP)".center(dim.columns))
+        print("\n" + "Please specify a protocol to enforce (TCP/HTTP) (empty input for any)".center(dim.columns))
         target_protocol = input(' ' * (dim.columns // 2 - 7) + ">>> ")
         target_protocol = target_protocol.lower()
 
         if target_protocol in ('tcp', 'http'):
-            frames = [frame for frame in frames if frame.get(target_protocol) == True]
+            frames = [frame for frame in frames if not target_protocol or frame.get(target_protocol) == True]
 
 
     return frames
+
+
+def list_all_ips(frames: list[TraceAbstract], dim: os.terminal_size) -> str:
+    ips = {f.ip_src for f in frames}
+    ip_addresses = ''
+    line = []
+    for i, ip in enumerate(ips):
+        if i and i % 5 == 0:
+            ip_addresses += ' - '.join(line).center(dim.columns) + '\n'
+            line = []
+
+        line.append(ip)
+
+    ip_addresses += ' - '.join(line).center(dim.columns) + '\n'
+
+    return ip_addresses

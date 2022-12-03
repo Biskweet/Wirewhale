@@ -69,12 +69,12 @@ class Parser:
         result = []
 
         for i, frame in enumerate(frames):
-            if (frame[24:28] != "0800") or (frame[28] != "4"):
+            if frame[24:28] != "0800" or frame[28] != "4":
                 print(f"Frame {i+1}/{len(frames)} not IPv4 (or still has Ethernet preamble).".center(dim.columns))
                 continue
 
             try:
-                analysis = self.analyze_frame(frame.lower())
+                analysis = self.analyze_frame(frame)
 
             except Exception as e:
                 print(f"Could not parse frame {i+1}/{len(frames)}. {e}".center(dim.columns))
