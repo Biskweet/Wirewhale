@@ -17,6 +17,7 @@ if __name__ == "__main__":
     else:
         input_filename = sys.argv[1]
 
+
     # Cleaning data and parsing
     parser = Parser(input_filename)
     frames = parser.clean_data()

@@ -23,12 +23,15 @@ ___    __    ___ __   _____    _________    __    ______   __      _      __    
 
 
 try:
-    char = "▔"
-    char.encode(sys.stdout.encoding)
+    # Checking UNICODE compatibility
+    char = '▔'
     arl, arr = '◀', '▶'
+    char.encode(sys.stdout.encoding)
     arl.encode(sys.stdout.encoding)
     arr.encode(sys.stdout.encoding)
+
 except UnicodeEncodeError as err:
+    # Verification failed, rolling back to ASCII characters
     char = "-"
     arl, arr = '<', '>'
 
