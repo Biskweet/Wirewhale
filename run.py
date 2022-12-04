@@ -18,19 +18,19 @@ if __name__ == "__main__":
         input_filename = sys.argv[1]
 
 
+    # Preparing interface
+    utils.clear_screen()
+    utils.print_logo(dim)
+
+
     # Cleaning data and parsing
     parser = Parser(input_filename)
     frames = parser.clean_data()
     result = parser.parse(frames)
 
 
-    # Preparing interface
-    utils.clear_screen()
-    utils.print_logo(dim)
-
-
     # Filtering frames with the user's choice
-    print(f"{len(result)} readable and compatible (Ethernet & IPv4) frames found.".center(dim.columns))
+    print('\n' + f" => {len(result)} readable and compatible (Ethernet & IPv4) frames found.".center(dim.columns))
     result = utils.filter_frames(result, dim)
 
     print("\n")
@@ -43,16 +43,14 @@ if __name__ == "__main__":
 
     abstract = utils.to_text(result)
 
-    # If the abstract is too wide for the terminal
+    # If the abstract is too wide for the terminal ask for resizing
     while abstract == '':
         input("Terminal does not have enough rows, please decrease font size or dezoom terminal (press enter to retry)")
         abstract = utils.to_text(result)
         dim = os.get_terminal_size()
 
-    print("\n\n")
-
-
-    print(abstract)
+    # Show abstract
+    print("\n\n" + abstract)
 
     # Getting output file name from the original
     filename = input_filename.replace("\\", "/").split("/")[-1].rsplit(".", 1)[0]
@@ -64,5 +62,5 @@ if __name__ == "__main__":
 
     input("Press enter to exit...".center(dim.columns) + '\n')
 
-    # Final screen clearing before exiting
+    # Final screen clearing before exit
     utils.clear_screen()
