@@ -167,6 +167,7 @@ class Parser:
         ack_number = int(frame[16:24], 16)
 
         tcp_header_length = 4 * int(frame[24], 16)
+        flags = utils.analyze_tcp_flags(frame[25:28])
         window_buffer_size = int(frame[28:32], 16)
 
         tcp_checksum = frame[32:36]
@@ -189,6 +190,7 @@ class Parser:
             "sequence_number"   : sequence_number,
             "ack_number"        : ack_number,
             "tcp_header_length" : tcp_header_length,
+            "tcp_flags"         : flags,
             "window_buffer_size": window_buffer_size,
             "tcp_checksum"      : tcp_checksum,
             "urgent_pointer"    : urgent_pointer,
