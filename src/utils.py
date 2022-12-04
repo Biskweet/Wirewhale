@@ -157,8 +157,8 @@ def to_text(frames: list[TraceAbstract]) -> str:
                 arrow = f"{f.ip_src}:{f.port_src} (MAC: {f.mac_src}) {arrow}{arr} {f.ip_dest}:{f.port_dest} (MAC: {f.mac_dest})"
                 visited_ips.append(f.ip_src)
 
-            flags = [flag for flag, value in f.tcp_flags.items() if value]
-            infos += f" (SN={f.sequence_number}, ACK={f.ack_number}, {str(flags).replace(chr(39), '')})"
+            flags = str([flag for flag, value in f.tcp_flags.items() if value]).replace("'", "")
+            infos += f" (SN={f.sequence_number}, ACK={f.ack_number}, {flags})"
 
         # Frame if NOT TCP
         else:
