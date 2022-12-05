@@ -142,11 +142,7 @@ def to_text(frames: list[TraceAbstract]) -> str:
             infos = f"{f.ethernet_frame_type} communication with protocol {f.protocol}"
 
         # Making arrow below
-        # Calculating size of the bar of the arrow
-        arrow = '~' * (dimensions.columns - len(f.ip_src) -
-                       len(f.mac_src) - len(f.ip_dest) -
-                       len(f.mac_dest) - 30)
-        arrow = arrow[:20]  # Max size is 20
+        arrow = '~' * 20
 
         # Frame is TCP
         if f.tcp == True:
@@ -158,7 +154,7 @@ def to_text(frames: list[TraceAbstract]) -> str:
                 visited_ips.append(f.ip_src)
 
             flags = str([flag for flag, value in f.tcp_flags.items() if value]).replace("'", "")
-            infos += f" (SN={f.sequence_number}, ACK={f.ack_number}, {flags})"
+            infos += f" (SN={f.sequence_number}, ACK={f.ack_number})" + (f' {flags}' if flags != '[]' else '')
 
         # Frame if NOT TCP
         else:
@@ -170,7 +166,7 @@ def to_text(frames: list[TraceAbstract]) -> str:
                 visited_ips.append(f.ip_src)
 
 
-        if len(infos) > (dimensions.columns - 25) or arrow == '':
+        if len(infos) > (dimensions.columns - 5) or len(arrow) > (dimensions.columns - 5):
             return ''  # Not enough size on screen
 
         report += infos.center(dimensions.columns) + '\n'

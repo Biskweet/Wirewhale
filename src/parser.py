@@ -208,9 +208,9 @@ class Parser:
         method, url, http_version = headers[0].split("20")
 
         # Only split on the first occurence of 0x3a20 (i.e. ': ')
-        headers = [arg.split("3a20", 1) for arg in headers[1:]]
+        headers = [arg.split("20", 1) for arg in headers[1:]]
 
-        http_options = {utils.to_ascii(key).lower(): utils.to_ascii(value) for key, value in headers}
+        http_options = {utils.to_ascii(key).lower()[:-1]: utils.to_ascii(value) for key, value in headers}
 
         return {
             "http"        : True,
