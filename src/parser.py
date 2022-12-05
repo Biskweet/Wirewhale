@@ -53,11 +53,9 @@ class Parser:
                 else:                  # ASCII translation found
                     current_frame = current_frame[:offset * 2] + line[:end_of_data].replace(' ', '')
 
-            except Exception as e:
-                print(f"Could not properly parse frame {i+1}. To fix that, " +
-                       "please export from Wireshark according to the instructions" +
-                      f" in README. ({e}). Aborting.")
-                exit(1)
+            except Exception:
+                print(f"Detected incorrect formatting on line {i + 1}. Skipping line.")
+                continue
 
         frames.append(current_frame)
 
@@ -205,7 +203,10 @@ class Parser:
 
         headers = headers.split("0d0a")
 
-        method, url, http_version = headers[0].split("20")
+        try:
+            method, url, http_version = headers[0].split("20", 2)
+        except:
+            raise Exception("Frame is not HTTP.")
 
         # Only split on the first occurence of 0x3a20 (i.e. ': ')
         headers = [arg.split("20", 1) for arg in headers[1:]]
@@ -218,5 +219,5 @@ class Parser:
             "url"         : utils.to_ascii(url),
             "http_version": utils.to_ascii(http_version),
             "http_options": http_options,
-            "http_body"   : utils.to_ascii(''.join(body))
+            "http_body"   : ''.join(body)
         }
