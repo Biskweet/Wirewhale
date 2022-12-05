@@ -21,19 +21,6 @@ logo_text = r"""___    __    ___ __   ______    _________    __    ______   __  
     \_/  \_/    |__| |__| `.___|_______|  \_/  \_/    |__| |__|/_/     \_\|______|______|"""
 
 
-try:
-    # Checking UNICODE compatibility
-    char = '▔'
-    arl, arr = '◀', '▶'
-    char.encode(sys.stdout.encoding)
-    arl.encode(sys.stdout.encoding)
-    arr.encode(sys.stdout.encoding)
-
-except UnicodeEncodeError as err:
-    # Verification failed, rolling back to ASCII characters
-    char = "-"
-    arl, arr = '<', '>'
-
 
 class TraceAbstract(dict):
     def get(self, key: str) -> object:
@@ -126,8 +113,12 @@ def analyze_tcp_flags(data: str) -> dict[str, bool]:
     return flags
 
 
-def to_text(frames: list[TraceAbstract]) -> str:
+def to_text(frames: list[TraceAbstract], run_safe=False) -> str:
     dimensions = os.get_terminal_size()
+
+    if run_safe: char, arl, arr = '-', '<', '>'
+    else: char, arl, arr = '▔', '◀', '▶'
+
 
     report = ''
     visited_ips = []

@@ -12,10 +12,28 @@ if __name__ == "__main__":
 
     # Querying the input file in case it wasn't provided
     if len(sys.argv) < 2:
-        print('\n\n', "Please input the (relative) path to the trace file".center(dim.columns), '\n')
+        print('\n\n' + "Please input the (relative/absolute) path to the trace file".center(dim.columns) + '\n')
         input_filename = input(' ' * (dim.columns // 2) + ">>> ")
     else:
         input_filename = sys.argv[1]
+
+
+    print('\n\n' + "What display mode do you want to run?".center(dim.columns))
+    print("1: Fancy mode (recommended), 2: Safe mode (only if your terminal fails to display Specials)".center(dim.columns))
+    safe_mode = input(' ' * (dim.columns // 2) + ">>> ")
+
+    try:
+        # Checking UNICODE compatibility
+        char = '▔'
+        arl, arr = '◀', '▶'
+        char.encode(sys.stdout.encoding)
+        arl.encode(sys.stdout.encoding)
+        arr.encode(sys.stdout.encoding)
+
+    except UnicodeEncodeError as err:
+        # Verification failed, rolling back to ASCII characters
+        char = "-"
+        arl, arr = '<', '>'
 
 
     # Preparing interface
@@ -41,7 +59,7 @@ if __name__ == "__main__":
         print("No valid frame to print.".center(dim.columns), '\n')
         exit()
 
-    abstract = utils.to_text(result)
+    abstract = utils.to_text(result, safe_mode=="2")
 
     # If the abstract is too wide for the terminal ask for resizing
     while abstract == '':
