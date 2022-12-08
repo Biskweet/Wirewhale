@@ -54,7 +54,8 @@ class Parser:
                     current_frame = current_frame[:offset * 2] + line[:end_of_data].replace(' ', '')
 
             except Exception:
-                print(f"Detected incorrect formatting on line {i + 1}. Skipping line.")
+                dim = os.get_terminal_size()
+                print(f"Detected incorrect formatting on line {i + 1}. Skipping line.".center(dim.columns))
                 continue
 
         frames.append(current_frame)
@@ -179,7 +180,10 @@ class Parser:
 
         # If it does contain HTTP data
         else:
-            http_payload = self.scan_http_headers(frame[2 * tcp_header_length:])
+            try:
+               http_payload = self.scan_http_headers(frame[2 * tcp_header_length:])
+            except Exception:
+                http_payload = {}
 
         return http_payload | {
             "tcp"               : True,
@@ -201,12 +205,11 @@ class Parser:
         # just in case there it is a n-uple. `body` is then a list of str)
         headers, *body = frame.split("0d0a0d0a")
 
+        assert "48545450" in headers
+
         headers = headers.split("0d0a")
 
-        try:
-            method, url, http_version = headers[0].split("20", 2)
-        except:
-            raise Exception("Frame is not HTTP.")
+        method, url, http_version = headers[0].split("20", 2)
 
         # Only split on the first occurence of 0x3a20 (i.e. ': ')
         headers = [arg.split("20", 1) for arg in headers[1:]]

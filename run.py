@@ -32,8 +32,7 @@ if __name__ == "__main__":
 
     except UnicodeEncodeError as err:
         # Verification failed, rolling back to ASCII characters
-        char = "-"
-        arl, arr = '<', '>'
+        safe_mode = "2"
 
 
     # Preparing interface
@@ -48,7 +47,7 @@ if __name__ == "__main__":
 
 
     # Filtering frames with the user's choice
-    print('\n' + f" => {len(result)} readable and compatible (Ethernet & IPv4) frames found.".center(dim.columns))
+    print('\n\n' + f" {'=>' if safe_mode == '2' else '▶'} {len(result)} readable and compatible (Ethernet & IPv4) frames found !".center(dim.columns))
     result = utils.filter_frames(result, dim)
 
     print("\n")
@@ -75,7 +74,10 @@ if __name__ == "__main__":
 
     # Writing output in a file
     with open(filename + "_wirewhale_output.txt", "wb") as output:
-        output.write(abstract.encode("utf-8"))
+        try:
+            output.write(abstract.encode("utf-8"))
+        except Exception as e:
+            print(f"Could not export data. It is most probably a problem specific to your computer ({e})")
 
 
     input("Press enter to exit...".center(dim.columns) + '\n')

@@ -1,5 +1,4 @@
 import os
-import sys
 
 
 logo_img = r"""              ´`.´`                        

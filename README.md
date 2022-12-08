@@ -68,3 +68,6 @@ La structure du code est relativement simple :
 On a donc, pseudo-mathématiquement : `analyze_frame ∪ (scan_ipv4_headers ∪ (scan_tcp_headers ∪ scan_http_header))`.
 
 Une autre petite classe, ainsi que différentes fonctions utilitaires, existent dans le fichier `utils.py` et servent à gérer l'affichage ou à simplifier le code de `Parser`. Elles ne seront pas détaillées ici.
+
+
+#### Le programme va exporter les données affichées à l'écran dans un fichier TXT avec comme nom `<nom fichier entrée>_wirewhale_output.txt`.
